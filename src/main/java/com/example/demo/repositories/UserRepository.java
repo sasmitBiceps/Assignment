@@ -6,4 +6,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserRepository extends MongoRepository<User, String> {
+    //We don't need to implement anything here, spring does this for us.
+    // MongoRepository has pre-defined functions which are enough for us.
+
+
 }

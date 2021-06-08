@@ -2,41 +2,97 @@ package com.example.demo.controller;
 
 import com.example.demo.model.Item;
 import com.example.demo.model.User;
-import com.example.demo.repositories.ItemRepository;
-import com.example.demo.repositories.UserRepository;
+import com.example.demo.services.ItemService;
+import com.example.demo.services.UserService;
+import com.example.demo.util.responses.ItemResponse;
+import com.example.demo.util.responses.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import javax.swing.text.html.Option;
-import java.util.Optional;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 @org.springframework.web.bind.annotation.RestController
 public class RestController {
+
+    //Autowired so we don't have to create objects by our own, spring will provide them
+    // to us.
     @Autowired
-    UserRepository repo;
+    private ItemService itemService;
+
     @Autowired
-    ItemRepository itemrepo;
+    private UserService userService;
+
     @GetMapping("/fetch/{id}")
-    public Optional<User> fetch(@PathVariable String id){
-        return repo.findById(id);
+    // Get mapping indicates the type of request we will get on this link ,"GET" in this case.
+    public Response fetch(@PathVariable String id) throws Exception {
+        if (!"".equals(id))
+        {
+            return userService.fetchUser(id);
+        }
+        else
+        {
+            System.err.println("Null user id");
+            Response response = new Response();
+            response.setSuccess(false);
+            response.setResponse("Null user id");
+            response.setHttpStatus(HttpStatus.BAD_REQUEST);
+            return response;
+        }
     }
+
+
     @PostMapping("/create")
-    public User create(@RequestBody User user){
-        User in = repo.insert(user);
-        return in;
+    // Post mapping indicates the type of request we will get on this link, "POST" in this case.
+    public Response create(@RequestBody User user){
+        if(user != null) {
+            Response in = userService.insertUser(user);
+            return in;
+        }
+        else{
+            System.err.println("Null user");
+            Response response = new Response();
+            response.setSuccess(false);
+            response.setResponse("Null user");
+            response.setHttpStatus(HttpStatus.BAD_REQUEST);
+            return response;
+        }
     }
-    @GetMapping("/fetchItem/{id}")
-    public String fetchItem(@PathVariable String id){
-        Optional<Item> it = itemrepo.findById(id);
-        if(it.isPresent()) return "Successful";
-        return  "Unsuccessful";
+
+    @GetMapping("/placeOrder")
+    public ItemResponse placeOrder(@RequestParam(name = "UserID") String UserID, @RequestParam(name = "ItemID") String ItemID){
+        ItemResponse response = new ItemResponse();
+        if("".equals(UserID) && "".equals(ItemID)){
+            response.setItemStatus("ItemID not present");
+            response.setUserStatus("UserID not present");
+            response.setOrderStatus("Order not placed");
+        }
+        else if("".equals(UserID)){
+            response.setUserStatus("UserID not present");
+            response.setOrderStatus("Order not placed");
+        }
+        else if("".equals(ItemID)){
+            response.setItemStatus("ItemID not present");
+            response.setOrderStatus("Order not placed");
+        }
+        else{
+            response = itemService.placeOrder(UserID, ItemID);
+        }
+        return  response;
     }
+
     @PostMapping("/newItem")
-    public Item post(@RequestBody Item item){
-        Item it = itemrepo.insert(item);
-        return item;
+    public Response post(@RequestBody Item item){
+        Response response = new Response();
+        if(item == null){
+            System.err.println("Null item");
+            Response userResponse = new Response();
+            userResponse.setSuccess(false);
+            userResponse.setResponse("Null item");
+            userResponse.setHttpStatus(HttpStatus.BAD_REQUEST);
+        }
+        else {
+            response = itemService.insert(item);
+        }
+        return response;
     }
 }
+//handling the race condition while placing an  order

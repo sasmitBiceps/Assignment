@@ -6,5 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ItemRepository extends MongoRepository<Item, String> {
-
+    //We don't need to implement anything here, spring does this for us.
+    // MongoRepository has pre-defined functions which are enough for us.
 }

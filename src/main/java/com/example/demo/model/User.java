@@ -2,10 +2,12 @@ package com.example.demo.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-@Document(collection = "user")
+//The class tells us the structure of a  general document in the user collection of the
+//connected DB.
+@Document(collection = "Users")
 public class User {
     @Id
+    // MongoDB will now automatically generate id strings for us
     private String id;
     private String name;
     private double age;
@@ -17,7 +19,10 @@ public class User {
         this.age = age;
         this.name = name;
     }
-
+    public User(String name){
+        super();
+        this.name = name;
+    }
     public String getId() {
         return id;
     }
