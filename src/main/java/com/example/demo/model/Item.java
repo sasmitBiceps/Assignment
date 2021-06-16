@@ -14,7 +14,8 @@ public class Item {
     private String name;
     private String price;
     private int quantity;
-    @Version long version;
+    @Version
+    private long version;
     public Item(){
 
     }

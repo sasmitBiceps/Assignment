@@ -58,7 +58,7 @@ public class RestController {
     }
 
     @GetMapping("/placeOrder")
-    public ItemResponse placeOrder(@RequestParam(name = "UserID") String UserID, @RequestParam(name = "ItemID") String ItemID){
+    public ItemResponse placeOrder(@RequestParam(name = "UserID") String UserID, @RequestParam(name = "ItemID") String ItemID, @RequestParam(name = "Quantity") int quantity){
         ItemResponse response = new ItemResponse();
         if("".equals(UserID) && "".equals(ItemID)){
             response.setItemStatus("ItemID not present");
@@ -73,8 +73,12 @@ public class RestController {
             response.setItemStatus("ItemID not present");
             response.setOrderStatus("Order not placed");
         }
+        else if(quantity <= 0){
+            response.setItemStatus("Quantity should be greater than 0");
+            response.setOrderStatus("Order not placed");
+        }
         else{
-            response = itemService.placeOrder(UserID, ItemID);
+            response = itemService.placeOrder(UserID, ItemID, quantity);
         }
         return  response;
     }

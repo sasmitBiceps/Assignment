@@ -6,6 +6,7 @@ import com.example.demo.repositories.ItemRepository;
 import com.example.demo.util.responses.ItemResponse;
 import com.example.demo.util.responses.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,7 @@ public class ItemService {
     @Autowired
     private UserService userService;
 
-    public ItemResponse placeOrder(String UserID, String ItemID){
+    public ItemResponse placeOrder(String UserID, String ItemID, int quantity){
         Optional<User> requestUser = userService.getUser(UserID);
         Optional<Item> requestedItem = itemRepository.findById(ItemID);
         ItemResponse itemResponse = new ItemResponse();
@@ -31,24 +32,25 @@ public class ItemService {
             itemResponse.setItemStatus("Item not present in database");
             itemResponse.setOrderStatus("Order couldn't be placed");
         }
+        Item item = requestedItem.orElse(new Item());
+        itemResponse.setItemStatus("Item fetched!");
+        itemResponse.setUserStatus("User identified");
+        if(quantity > item.getQuantity()){
+            itemResponse.setOrderStatus("Order failed! We only have " + item.getQuantity() + " items.");
+        }
         else{
-            itemResponse.setUserStatus("User identified");
-            itemResponse.setItemStatus("Item fetched");
-            Item item = requestedItem.orElse(null);
-          //  User user = requestUser.orElse(null);
-            if(item.getQuantity() == 0){
-                itemResponse.setOrderStatus("Item out of stock");
+            try {
+                itemResponse.setOrderStatus("Order placed successfully");
+                item.setQuantity(item.getQuantity() - quantity);
+                itemRepository.save(item);
             }
-            else{
-                try {
-                    itemResponse.setOrderStatus("Order placed successfully");
-                    item.setQuantity(item.getQuantity() - 1);
-                    itemRepository.save(item);
-                }
-                catch(Exception e) {
-                    System.out.println("Failed to order");
-                    itemResponse.setOrderStatus("Order failed");
-                }
+            catch(OptimisticLockingFailureException e) {
+                System.out.println("Race condition occurred!");
+                itemResponse.setOrderStatus("Order failed");
+            }
+            catch (Exception e){
+                System.out.println("Some error occurred, please try again.");
+                itemResponse.setUserStatus("Order failed");
             }
         }
         return itemResponse;
