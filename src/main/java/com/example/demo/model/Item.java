@@ -1,6 +1,7 @@
 package com.example.demo.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 //The class tells us the structure of a  general document in the items collection of the
@@ -13,7 +14,7 @@ public class Item {
     private String name;
     private String price;
     private int quantity;
-
+    @Version long version;
     public Item(){
 
     }

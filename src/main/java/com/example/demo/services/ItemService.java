@@ -40,9 +40,15 @@ public class ItemService {
                 itemResponse.setOrderStatus("Item out of stock");
             }
             else{
-                itemResponse.setOrderStatus("Order placed successfully");
-                item.setQuantity(item.getQuantity() - 1);
-                itemRepository.save(item);
+                try {
+                    itemResponse.setOrderStatus("Order placed successfully");
+                    item.setQuantity(item.getQuantity() - 1);
+                    itemRepository.save(item);
+                }
+                catch(Exception e) {
+                    System.out.println("Failed to order");
+                    itemResponse.setOrderStatus("Order failed");
+                }
             }
         }
         return itemResponse;
